@@ -3,7 +3,7 @@ module DiffusionMap
 
 using Distances, LinearAlgebra, Statistics
 
-export standardize!, inverseDistance, thresholding, laplacian
+export standardize!, inverseDistance, thresholding, laplacian, quickDiffusionMap, eigenVisualisation
 
 ## types
 
@@ -61,6 +61,19 @@ function laplacian(threshold)
     end
     Laplace = Diagonal(ones(l)) - Laplace
     return Laplace
+end
+
+function quickDiffusionMap(data, nextneighbors)
+    return eigen(laplacian(thresholding(inverseDistance(data), nextneighbors)))
+end
+
+function eigenVisualisation(ϕ, color_z, markersize=4)
+    s1 = scatter(ϕ[:,1], ϕ[:,2], marker_z=color_z, title="EV 1/2", label="", ms=markersize,color=:thermal)
+    s2 = scatter(ϕ[:,1], ϕ[:,3], marker_z=color_z, title="EV 1/3", label="", ms=markersize,color=:thermal)
+    s3 = scatter(ϕ[:,1], ϕ[:,4], marker_z=color_z, title="EV 1/4", label="", ms=markersize,color=:thermal)
+    s4 = scatter(ϕ[:,1], ϕ[:,5], marker_z=color_z, title="EV 1/5", label="", ms=markersize,color=:thermal)
+    p = plot(s1,s2,s3,s4, layout = (2,2))
+    return p
 end
 
 end # module
