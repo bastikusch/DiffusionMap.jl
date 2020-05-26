@@ -1,7 +1,7 @@
 # DiffusionMap.jl
 module DiffusionMap
 
-using Plots, LinearAlgebra, Statistics
+using Plots, LinearAlgebra, Statistics, SparseArrays
 
 export Kernel, InverseDistance, Gaussian, Linear, Polynomial, Correlation, LaplaceKernel, Spearman, Diffusionmap
 export standardize!, similarity, thresholding!, simpleLaplacian, normaliedLaplacian, createDiffusionmap, eigenVisualize, nonNormalizedLaplacian
@@ -115,16 +115,16 @@ function thresholding!(sim::Matrix, nextNeighbors::Int)
     reshape(sim, (le,le))
 end
 
-function normalizedLaplacian(sim::Matrix)
-    L = copy(sim)
-    for i = 1:size(sim, 1)
-        L[i,:] = L[i,:] / sum(L[i,:])
-    end
-    L = Diagonal(ones(size(sim, 1))) - L
+function normalizedLaplacian(A::Matrix)
+    s = sum(A; dims=2)
+    D = convert(SparseMatrixCSC, spdiagm(0 => s[:]))
+    return Symmetric(I - D^(-1/2) * A * D^(-1/2))
 end
 
-function simpleLaplacian(sim::Matrix)
-    return Diagonal(sum(sim,dims=2)[:]) - sim
+function simpleLaplacian(A::Matrix)
+    s = sum(A; dims=2)
+    D = convert(SparseMatrixCSC, spdiagm(0 => s[:]))
+    return D - A
 end
 
 function createDiffusionmap(k::T, data::Matrix, nextNeighbors=size(data,1), normalized=true) where T <: Kernel
