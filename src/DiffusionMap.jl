@@ -1,18 +1,49 @@
 # DiffusionMap.jl
 module DiffusionMap
 
-using Distances, LinearAlgebra, Statistics
+using Plots, LinearAlgebra, Statistics
 
-export standardize!, inverseDistance, thresholding, laplacian, quickDiffusionMap, eigenVisualisation
+export Kernel, InverseDistance, Gaussian, Linear, Polynomial, Correlation, LaplaceKernel, Spearman, Diffusionmap
+export standardize!, similarity, thresholding!, simpleLaplacian, normaliedLaplacian, createDiffusionmap, eigenVisualize, nonNormalizedLaplacian
 
 ## types
 
+abstract type Kernel end
+
+struct InverseDistance <: Kernel end
+
+struct Gaussian <: Kernel
+    σ::Float64
+end
+
+Gaussian() = Gaussian(1.0)
+
+struct Linear <: Kernel end
+
+struct Spearman <: Kernel end
+
+struct Polynomial <: Kernel
+    r::Float64
+    n::Int
+end
+
+Polynomial() = Polynomial(0.0, 1)
+
+struct Correlation <: Kernel end
+
+struct LaplaceKernel <: Kernel
+    α::Float64
+end
+
+LaplaceKernel() = LaplaceKernel(1.0)
+
+struct Diffusionmap
+    data::Matrix
+    λ::Vector
+    ϕ::Matrix
+end
 
 ## data handling
-"""
- standardize!()
-blabla
-"""
 
 function standardize!(data::Matrix)
     for i = 1:size(data, 2)
@@ -20,58 +51,110 @@ function standardize!(data::Matrix)
     end
 end
 
-## kernels
+## functions
 
-function inverseDistance(data)
-    l = size(data, 1)
-    similarity = zeros(l, l)
+function similarity(k::InverseDistance, x::Vector, y::Vector)
+    sim = 1 / norm(x .- y)^2
+    return isinf(sim) ? 0 : sim
+end
+
+function similarity(k::Gaussian, x::Vector, y::Vector)
+    sim = exp(-(norm(x .- y)^2) / (2 * k.σ ^2))
+    return (x == y) ? 0 : sim
+end
+
+function similarity(k::LaplaceKernel, x::Vector, y::Vector)
+    sim = exp(-k.α * (norm(x .- y)))
+    return (x == y) ? 0 : sim
+end
+
+function similarity(k::Correlation, x::Vector, y::Vector)
+    sim = abs(cor(x,y))
+    return (x == y) ? 0 : sim
+end
+
+function similarity(k::Linear, x::Vector, y::Vector)
+    sim = dot(x, y) / (norm(x) * norm(y))
+    return (x == y) ? 0 : sim
+end
+
+function similarity(k::Polynomial, x::Vector, y::Vector)
+    sim = (dot(x, y) / (norm(x) * norm(y)) + k.r)^k.n
+    return (x == y) ? 0 : sim
+end
+
+function similarity(k::Spearman, x::Vector, y::Vector)
+    sim = abs(cov(sortperm(x), sortperm(y)) / (std(sortperm(x)) * std(sortperm(y))))
+    return (x == y) ? 0 : sim
+end
+
+function similarity(k::T, A::Matrix) where T <: Kernel
+    l = size(A, 1)
+    sim = zeros(l, l)
     for i = 1:l
         for j = i:l
-            similarity[i, j] = euclidean(data[i,:], data[j,:])
+            sim[i, j] = similarity(k, A[i,:], A[j,:])
         end
     end
-    similarity = similarity + transpose(similarity)
-    similarity = 1 ./ similarity
-    similarity[isinf.(similarity)] .= 0
-    return similarity
+    sim = sim + transpose(sim)
+    return sim
 end
 
-## other functions
-
-function thresholding(similarity, nextneighbors)
-    l = size(similarity, 1)
-    threshold = copy(similarity)
-    for i = 1:l
-        sortColumn = sort(similarity[:,i], rev = true)
-        nth_Max = sortColumn[nextneighbors]
-        threshold[:, i] = map(x -> x < nth_Max ? 0 : x, similarity[:, i])
+function thresholding!(sim::Matrix, nextNeighbors::Int)
+    le = size(sim,1)
+    if (nextNeighbors != size(sim,1))
+        for i = 1:le
+            sortRow = sort(sim[i,:], rev = true)
+            nth_Max = sortRow[nextNeighbors]
+            sim[i,:] = map(x -> x < nth_Max ? 0 : x, sim[i,:])
+        end
     end
-    lower = Symmetric(threshold, :L)
-    upper = Symmetric(threshold, :U)
-    threshold[:] = max.(lower[:], upper[:])
-    return threshold
+    l = Symmetric(sim, :L)
+    u = Symmetric(sim, :U)
+    sim[:] = max.(l[:], u[:])
+    reshape(sim, (le,le))
 end
 
-function laplacian(threshold)
-    l = size(threshold, 1)
-    Adjacency = copy(threshold)
-    Laplace = Adjacency
-    for i = 1:l
-        Laplace[i,:] = Laplace[i,:] / sum(Laplace[i,:])
+function normalizedLaplacian(sim::Matrix)
+    L = copy(sim)
+    for i = 1:size(sim, 1)
+        L[i,:] = L[i,:] / sum(L[i,:])
     end
-    Laplace = Diagonal(ones(l)) - Laplace
-    return Laplace
+    L = Diagonal(ones(size(sim, 1))) - L
 end
 
-function quickDiffusionMap(data, nextneighbors)
-    return eigen(laplacian(thresholding(inverseDistance(data), nextneighbors)))
+function simpleLaplacian(sim::Matrix)
+    return Diagonal(sum(sim,dims=2)[:]) - sim
 end
 
-function eigenVisualisation(ϕ, color_z, markersize=4)
-    s1 = scatter(ϕ[:,1], ϕ[:,2], marker_z=color_z, title="EV 1/2", label="", ms=markersize,color=:thermal)
-    s2 = scatter(ϕ[:,1], ϕ[:,3], marker_z=color_z, title="EV 1/3", label="", ms=markersize,color=:thermal)
-    s3 = scatter(ϕ[:,1], ϕ[:,4], marker_z=color_z, title="EV 1/4", label="", ms=markersize,color=:thermal)
-    s4 = scatter(ϕ[:,1], ϕ[:,5], marker_z=color_z, title="EV 1/5", label="", ms=markersize,color=:thermal)
+function createDiffusionmap(k::T, data::Matrix, nextNeighbors=size(data,1), normalized=true) where T <: Kernel
+    Adjacency = thresholding!(similarity(k, data), nextNeighbors)
+    Laplace = normalized ? normalizedLaplacian(Adjacency) : simpleLaplacian(Adjacency)
+    λ, ϕ = eigen(Laplace)
+    if (abs(λ[1]) > 10^(-10))
+        @warn "First eigen value of diffusion map not 0"
+    end
+    return Diffusionmap(data, λ, ϕ)
+end
+
+## visualisation
+
+function eigenVisualize(difmap::Diffusionmap, markersize=4)
+    ϕ = real.(difmap.ϕ)
+    s1 = scatter(ϕ[:,2], ϕ[:,3], title="eigen vector 1 / 2", label="", ms=markersize)
+    s2 = scatter(ϕ[:,2], ϕ[:,4], title="eigen vector 1 / 3", label="", ms=markersize)
+    s3 = scatter(ϕ[:,2], ϕ[:,5], title="eigen vector 1 / 4", label="", ms=markersize)
+    s4 = scatter(ϕ[:,2], ϕ[:,6], title="eigen vector 1 / 5", label="", ms=markersize)
+    p = plot(s1,s2,s3,s4, layout = (2,2))
+    return p
+end
+
+function eigenVisualize(difmap::Diffusionmap, color_z::Vector, markersize=4)
+    ϕ = real.(difmap.ϕ)
+    s1 = scatter(ϕ[:,2], ϕ[:,3], marker_z=color_z, title="eigen vector 1 / 2", label="", ms=markersize,color=:thermal)
+    s2 = scatter(ϕ[:,2], ϕ[:,4], marker_z=color_z, title="eigen vector 1 / 3", label="", ms=markersize,color=:thermal)
+    s3 = scatter(ϕ[:,2], ϕ[:,5], marker_z=color_z, title="eigen vector 1 / 4", label="", ms=markersize,color=:thermal)
+    s4 = scatter(ϕ[:,2], ϕ[:,6], marker_z=color_z, title="eigen vector 1 / 5", label="", ms=markersize,color=:thermal)
     p = plot(s1,s2,s3,s4, layout = (2,2))
     return p
 end
