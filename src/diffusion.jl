@@ -4,28 +4,17 @@ struct Diffusionmap
     data::Matrix
     λ::Vector
     ϕ::Matrix
+    kernel::Type
 end
 
 ## diffusion map methodolgy
 
-function getAdjacency(k::T, data::Matrix) where T <: Kernel
+function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
     l = size(data, 1)
     A = zeros(l, l)
     for i = 1:l
         for j = i+1:l
-            A[i, j] = (i==j) ? 0.0 : similarity(k, data[i,:], data[j,:])
-        end
-    end
-    A = A + transpose(A)
-    return A
-end
-
-function getAdjacency(k::T, data::Matrix, α::Float64) where T <: Kernel
-    l = size(data, 1)
-    A = zeros(l, l)
-    for i = 1:l
-        for j = i+1:l
-            A[i, j] = (i==j) ? 0.0 : similarity(k, data[i,:], data[j,:])
+            A[i, j] = similarity(k, data[i,:], data[j,:])
         end
     end
     A = A + transpose(A)
@@ -58,25 +47,14 @@ function simpleLaplacian(A::Matrix)
     return D - A
 end
 
-function createDiffusionmap(k::T, data::Matrix; α::Float64=0.0, normalized::Bool=true) where T <: Kernel
-    Adjacency = (α == 0.0) ? getAdjacency(k, data) : getAdjacency(k, data, α)
+function createDiffusionmap(k::T, data::Matrix; nextNeighbors::Int=0, α::Float64=0.0, normalized::Bool=true) where T <: Kernel
+    initialAdjacency = getAdjacency(k, data, α)
+    Adjacency = nextNeighbors > 0 ? thresholding!(initialAdjacency, nextNeighbors) : initialAdjacency
     Laplace = normalized ? normalizedLaplacian(Adjacency) : simpleLaplacian(Adjacency)
     λ, ϕ = eigen(Laplace)
     if (abs(λ[1]) > 10^(-10))
         λ0 = λ[1]
         @warn "λ0 = $λ0"
     end
-    return Diffusionmap(data, λ, ϕ)
-end
-
-function createDiffusionmap(k::T, data::Matrix, nextNeighbors::Int; α::Float64=0.0, normalized::Bool=true) where T <: Kernel
-    initialAdjacency = (α == 0.0) ? getAdjacency(k, data) : getAdjacency(k, data, α)
-    Adjacency = thresholding!(initialAdjacency, nextNeighbors)
-    Laplace = normalized ? normalizedLaplacian(Adjacency) : simpleLaplacian(Adjacency)
-    λ, ϕ = eigen(Laplace)
-    if (abs(λ[1]) > 10^(-10))
-        λ0 = λ[1]
-        @warn "λ0 = $λ0"
-    end
-    return Diffusionmap(data, λ, ϕ)
+    return Diffusionmap(data, λ, ϕ, typeof(k))
 end
