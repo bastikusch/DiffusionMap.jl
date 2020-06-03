@@ -35,23 +35,18 @@ function thresholding!(A::Matrix, nextNeighbors::Int)
     reshape(A, (len,len))
 end
 
-function normalizedLaplacian(A::Matrix)
-    s = sum(A; dims=2)
-    D = convert(SparseMatrixCSC, spdiagm(0 => s[:]))
-    return Symmetric(I - D^(-1/2) * A * D^(-1/2))
+function getLaplacian(A::Matrix, laplace::Symbol)
+    D = Diagonal(sum(A, dims=2)[:])
+    L = D - A
+    mode = Dict(:Regular => L, :Normalized => inv(D) * L, :Symmetric => D^(-1/2) * L * D^(-1/2))
+    return mode[laplace]
 end
 
-function simpleLaplacian(A::Matrix)
-    s = sum(A; dims=2)
-    D = convert(SparseMatrixCSC, spdiagm(0 => s[:]))
-    return D - A
-end
-
-function createDiffusionmap(k::T, data::Matrix; nextNeighbors::Int=0, α::Float64=0.0, normalized::Bool=true) where T <: Kernel
+function createDiffusionmap(k::T, data::Matrix; nextNeighbors::Int=0, α::Float64=0.0, laplace=:Normalized) where T <: Kernel
     initialAdjacency = getAdjacency(k, data, α)
     Adjacency = nextNeighbors > 0 ? thresholding!(initialAdjacency, nextNeighbors) : initialAdjacency
-    Laplace = normalized ? normalizedLaplacian(Adjacency) : simpleLaplacian(Adjacency)
-    λ, ϕ = eigen(Laplace)
+    Laplacian = getLaplacian(Adjacency, laplace)
+    λ, ϕ = eigen(Laplacian)
     if (abs(λ[1]) > 10^(-10))
         λ0 = λ[1]
         @warn "λ0 = $λ0"

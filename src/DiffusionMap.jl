@@ -13,8 +13,7 @@ similarity,
 
 # diffusion.jl
 thresholding!, getAdjacency,
-simpleLaplacian, normalizedLaplacian,
-createDiffusionmap,
+getLaplacian, createDiffusionmap,
 
 # utils.jl
 standardize!, visualize
