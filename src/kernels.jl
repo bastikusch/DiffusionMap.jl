@@ -33,7 +33,7 @@ LaplaceKernel() = LaplaceKernel(1.0)
 ## similarity computation for each kernel
 
 function similarity(k::InverseDistance, x::Vector, y::Vector)
-    return 1 / norm(x .- y)
+    return x == y ? 0.0 : 1 / norm(x .- y)
 end
 
 function similarity(k::Gaussian, x::Vector, y::Vector)
