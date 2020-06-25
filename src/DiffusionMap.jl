@@ -15,11 +15,15 @@ similarity,
 thresholding!, getAdjacency,
 getLaplacian, createDiffusionmap,
 
+# deepDiffusion.jl
+stepDiffusion, deepDiffusion, eigenEvolution,
+
 # utils.jl
 standardize!, visualize
 
 include("kernels.jl")
 include("diffusion.jl")
+include("deepDiffusion.jl")
 include("utils.jl")
 
 

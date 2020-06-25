@@ -9,6 +9,19 @@ end
 
 ## diffusion map methodolgy
 
+# function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
+#     l = size(data, 1)
+#     A = zeros(l, l)
+#     for i = 1:l
+#         for j = i+1:l
+#             A[i, j] = similarity(k, data[i,:], data[j,:])
+#         end
+#     end
+#     A = A + transpose(A)
+#     D = Diagonal(sum(A, dims=2)[:])
+#     A_α = inv(D)^α * A * inv(D)^α
+#     return A_α
+# end
 function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
     l = size(data, 1)
     A = zeros(l, l)
@@ -18,9 +31,7 @@ function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
         end
     end
     A = A + transpose(A)
-    D = Diagonal(sum(A, dims=2)[:])
-    A_α = inv(D)^α * A * inv(D)^α
-    return A_α
+    return A
 end
 
 function thresholding!(A::Matrix, nextNeighbors::Int)
@@ -38,7 +49,7 @@ end
 function getLaplacian(A::Matrix, laplace::Symbol)
     D = Diagonal(sum(A, dims=2)[:])
     L = D - A
-    mode = Dict(:Regular => L, :Normalized => inv(D) * L, :Symmetric => D^(-1/2) * L * D^(-1/2))
+    mode = Dict(:Regular => L, :Normalized => inv(D) * L, :Symmetric => Symmetric(D^(-1/2) * L * D^(-1/2)))
     return mode[laplace]
 end
 
