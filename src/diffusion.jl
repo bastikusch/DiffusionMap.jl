@@ -7,21 +7,9 @@ struct Diffusionmap
     kernel::Type
 end
 
-## diffusion map methodolgy
+## diffusion map functions
 
-# function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
-#     l = size(data, 1)
-#     A = zeros(l, l)
-#     for i = 1:l
-#         for j = i+1:l
-#             A[i, j] = similarity(k, data[i,:], data[j,:])
-#         end
-#     end
-#     A = A + transpose(A)
-#     D = Diagonal(sum(A, dims=2)[:])
-#     A_α = inv(D)^α * A * inv(D)^α
-#     return A_α
-# end
+# calculation Adjacency matrix
 function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
     l = size(data, 1)
     A = zeros(l, l)
@@ -34,6 +22,7 @@ function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
     return A
 end
 
+# thresholding to control local connectance
 function thresholding!(A::Matrix, nextNeighbors::Int)
     len = size(A,1)
     for i = 1:len
@@ -46,6 +35,7 @@ function thresholding!(A::Matrix, nextNeighbors::Int)
     reshape(A, (len,len))
 end
 
+# calculate Laplacian matrix with dictonary controlled type of Laplacian
 function getLaplacian(A::Matrix, laplace::Symbol)
     D = Diagonal(sum(A, dims=2)[:])
     L = D - A
@@ -53,12 +43,13 @@ function getLaplacian(A::Matrix, laplace::Symbol)
     return mode[laplace]
 end
 
+# eigen decomposition, short cut through all diffusion steps
 function createDiffusionmap(k::T, data::Matrix; nextNeighbors::Int=0, α::Float64=0.0, laplace=:Normalized) where T <: Kernel
     initialAdjacency = getAdjacency(k, data, α)
     Adjacency = nextNeighbors > 0 ? thresholding!(initialAdjacency, nextNeighbors) : initialAdjacency
     Laplacian = getLaplacian(Adjacency, laplace)
     λ, ϕ = eigen(Laplacian)
-    if (abs(λ[1]) > 10^(-10))
+    if (abs(λ[1]) > 10^(-12))
         λ0 = λ[1]
         @warn "λ0 = $λ0"
     end

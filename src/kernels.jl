@@ -1,13 +1,17 @@
+
 ## Kernel types
 
+# abstract kernel supertype, all others inherit from Kernel
 abstract type Kernel end
 
+# all subtypes characterize similarity calculations
 struct InverseDistance <: Kernel end
 
 struct Gaussian <: Kernel
     σ::Float64
 end
 
+# define epty initalization
 Gaussian() = Gaussian(1.0)
 
 struct Linear <: Kernel end
@@ -32,6 +36,7 @@ LaplaceKernel() = LaplaceKernel(1.0)
 
 ## similarity computation for each kernel
 
+# MULTIPLE DISPATCH
 function similarity(k::InverseDistance, x::Vector, y::Vector)
     return x == y ? 0.0 : 1 / norm(x .- y)
 end

@@ -1,6 +1,7 @@
 # DiffusionMap.jl
 module DiffusionMap
 
+# dependency
 using Plots, LinearAlgebra, Statistics, SparseArrays
 
 export

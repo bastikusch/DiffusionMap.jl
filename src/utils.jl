@@ -1,12 +1,14 @@
-## data handling
 
+## utilization functions
+
+# standardize data matrix across columns
 function standardize!(data::Matrix)
     for i = 1:size(data, 2)
         data[:,i] = (data[:,i] .- mean(data[:,i])) / sqrt(var(data[:,i]))
     end
 end
 
-## visualisation
+## visualisation stuff with dispatch for coloring
 
 function visualize(difmap::Diffusionmap, markersize=4)
     ϕ = real.(difmap.ϕ)
