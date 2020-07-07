@@ -62,5 +62,5 @@ function similarity(k::Polynomial, x::Vector, y::Vector)
 end
 
 function similarity(k::Spearman, x::Vector, y::Vector)
-    return abs(cov(sortperm(x), sortperm(y)) / (std(sortperm(x)) * std(sortperm(y))))
+    return abs(cor(sortperm(x), sortperm(y)))
 end

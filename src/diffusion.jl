@@ -1,16 +1,15 @@
 ## type diffusion map
 
 struct Diffusionmap
-    data::Matrix
+    kernel::Type
     λ::Vector
     ϕ::Matrix
-    kernel::Type
 end
 
 ## diffusion map functions
 
 # calculation Adjacency matrix
-function getAdjacency(k::T, data::Matrix, α::Float64=0.0) where T <: Kernel
+function getAdjacency(k::T, data::Matrix) where T <: Kernel
     l = size(data, 1)
     A = zeros(l, l)
     for i = 1:l
@@ -44,14 +43,12 @@ function getLaplacian(A::Matrix, laplace::Symbol)
 end
 
 # eigen decomposition, short cut through all diffusion steps
-function createDiffusionmap(k::T, data::Matrix; nextNeighbors::Int=0, α::Float64=0.0, laplace=:Normalized) where T <: Kernel
-    initialAdjacency = getAdjacency(k, data, α)
+function createDiffusionmap(k::T, data::Matrix; nextNeighbors::Int=0, laplace=:Normalized) where T <: Kernel
+    initialAdjacency = getAdjacency(k, data)
     Adjacency = nextNeighbors > 0 ? thresholding!(initialAdjacency, nextNeighbors) : initialAdjacency
     Laplacian = getLaplacian(Adjacency, laplace)
     λ, ϕ = eigen(Laplacian)
-    if (abs(λ[1]) > 10^(-12))
-        λ0 = λ[1]
-        @warn "λ0 = $λ0"
-    end
-    return Diffusionmap(data, λ, ϕ, typeof(k))
+    abs(λ[1]) > 10^(-12) ? (@warn "First eigen value not 0: λ0 = $(λ[1])") : ()
+    typeof(λ[2]) == Complex{Float64} ? (@warn "Complex eigenvalues") : ()
+    return Diffusionmap(typeof(k), λ, ϕ)
 end

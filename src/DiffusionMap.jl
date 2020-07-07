@@ -20,7 +20,7 @@ getLaplacian, createDiffusionmap,
 stepDiffusion, deepDiffusion, eigenEvolution,
 
 # utils.jl
-standardize!, visualize
+standardize!, visualize, addTitles!
 
 include("kernels.jl")
 include("diffusion.jl")

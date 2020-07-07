@@ -10,22 +10,32 @@ end
 
 ## visualisation stuff with dispatch for coloring
 
-function visualize(difmap::Diffusionmap, markersize=4)
+function visualize(difmap::Diffusionmap, dims::Tuple, color_z, markersize)
     ϕ = real.(difmap.ϕ)
-    s1 = scatter(ϕ[:,2], ϕ[:,3], title="eigen vector 1 / 2", label="", ms=markersize)
-    s2 = scatter(ϕ[:,2], ϕ[:,4], title="eigen vector 1 / 3", label="", ms=markersize)
-    s3 = scatter(ϕ[:,2], ϕ[:,5], title="eigen vector 1 / 4", label="", ms=markersize)
-    s4 = scatter(ϕ[:,2], ϕ[:,6], title="eigen vector 1 / 5", label="", ms=markersize)
-    p = plot(s1,s2,s3,s4, layout = (2,2))
+    isempty(color_z) ? (return visualize(difmap, dims, markersize)) : ()
+    p = scatter(ϕ[:,dims[1]], ϕ[:,dims[2]], marker_z=color_z, label="", ms=markersize, color=:thermal)
     return p
 end
 
-function visualize(difmap::Diffusionmap, color_z::Vector, markersize=4)
+function visualize(difmap::Diffusionmap, dims::Tuple, markersize)
     ϕ = real.(difmap.ϕ)
-    s1 = scatter(ϕ[:,2], ϕ[:,3], marker_z=color_z, title="eigen vector 1 / 2", label="", ms=markersize,color=:thermal)
-    s2 = scatter(ϕ[:,2], ϕ[:,4], marker_z=color_z, title="eigen vector 1 / 3", label="", ms=markersize,color=:thermal)
-    s3 = scatter(ϕ[:,2], ϕ[:,5], marker_z=color_z, title="eigen vector 1 / 4", label="", ms=markersize,color=:thermal)
-    s4 = scatter(ϕ[:,2], ϕ[:,6], marker_z=color_z, title="eigen vector 1 / 5", label="", ms=markersize,color=:thermal)
-    p = plot(s1,s2,s3,s4, layout = (2,2))
+    p = scatter(ϕ[:,dims[1]], ϕ[:,dims[2]], label="", ms=markersize)
     return p
+end
+
+function visualize(difmap::Diffusionmap; dims::UnitRange{Int64}=2:3, color_z::Vector=[],layout::Tuple=(1,1), markersize=5)
+    ϕ = real.(difmap.ϕ)
+    plot_array = Any[]
+    for i in 2:size(dims,1)
+      push!(plot_array,visualize(difmap, (dims[1],dims[i]), color_z, markersize))
+    end
+    p = plot(plot_array...,layout=layout)
+    return p
+end
+
+function addTitles!(plot::Plots.Plot{Plots.GRBackend},subtitles::Vector{String})
+    for i in 1:size(subtitles,1)
+        plot.subplots[i].attr[:title] = subtitles[i]
+    end
+    display(plot)
 end
