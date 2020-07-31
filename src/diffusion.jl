@@ -6,7 +6,7 @@ struct Diffusionmap
     ϕ::Matrix
 end
 
-## diffusion map functions
+## diffusion map functions a little more info
 
 # calculation Adjacency matrix
 function getAdjacency(k::T, data::Matrix) where T <: Kernel
