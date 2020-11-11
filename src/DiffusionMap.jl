@@ -2,30 +2,24 @@
 module DiffusionMap
 
 # dependency
-using Plots, LinearAlgebra, Statistics, SparseArrays
+using Plots, LinearAlgebra, Statistics
 
 export
 # kernels.jl
-Kernel, Diffusionmap,
-InverseDistance, Gaussian,
-Linear, Polynomial, Spearman,
-Correlation, LaplaceKernel,
-similarity,
+Kernel, DiffusionMap, DiffusionProblem,
+InverseDistance, Gaussian, Linear,
+Polynomial, LaplaceKernel, similarity,
 
 # diffusion.jl
-thresholding!, getAdjacency,
-getLaplacian, createDiffusionmap,
-
-# deepDiffusion.jl
-stepDiffusion, deepDiffusion, eigenEvolution,
+thresholding!, calculateAdjacency,
+calculateLaplacian, calculateDiffusionMap,
 
 # utils.jl
-standardize!, visualize, addTitles!
+standardize!, visualize,
+multiVisualize, addTitles!
 
 include("kernels.jl")
 include("diffusion.jl")
-include("deepDiffusion.jl")
 include("utils.jl")
-
 
 end # module
