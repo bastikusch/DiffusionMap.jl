@@ -31,7 +31,6 @@ function Base.show(io::IO, ::MIME"text/plain", dm::Diffusionmap)
 end
 
 ## diffusion map functions
-## diffusion map functions a little more info
 
 # calculation Adjacency matrix
 function calculateAdjacency(dP::DiffusionProblem)
