@@ -2,7 +2,7 @@
 module DiffusionMap
 
 # dependency
-using Plots, LinearAlgebra, Statistics
+using Plots, LinearAlgebra, Statistics, Distances
 
 export
 # kernels.jl
