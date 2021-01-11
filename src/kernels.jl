@@ -12,11 +12,17 @@ struct Gaussian <: Kernel
 end
 Gaussian() = Gaussian(1.0)
 
-struct KLKernel <: Kernel end
+struct KLKernel <: Kernel
+    α::Float64
+end
+KLKernel() = KLKernel(1.0)
 
 struct Correlation <: Kernel end
 
-struct InformationCorrelation <: Kernel end
+struct InformationCorrelation <: Kernel
+    α::Float64
+end
+InformationCorrelation() = InformationCorrelation(1.0)
 
 ## similarity computation for each kernel
 
@@ -30,7 +36,7 @@ function similarity(k::Gaussian, x::Vector, y::Vector)
 end
 
 function similarity(k::KLKernel, x::Vector, y::Vector)
-    return Distances.KLDivergence()(x, y)
+    return renyientropy(x, k.α) + renyientropy(y, k.α) - renyientropy(vcat(x, y), k.α)
 end
 
 function similarity(k::Correlation, x::Vector, y::Vector)
@@ -38,6 +44,6 @@ function similarity(k::Correlation, x::Vector, y::Vector)
 end
 
 function similarity(k::InformationCorrelation, x::Vector, y::Vector)
-    return abs(sign(cor(x, y)) * sqrt(1 - 2 ^ (-2 * Distances.KLDivergence()(x, y))))
+    return abs(sign(cor(x, y)) * sqrt(1 - 2 ^ (-2 * (renyientropy(x, k.α) + renyientropy(y, k.α) - renyientropy(vcat(x, y), k.α)))))
 end
 
