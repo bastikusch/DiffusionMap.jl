@@ -30,7 +30,7 @@ function similarity(k::Gaussian, x::Vector, y::Vector)
 end
 
 function similarity(k::KLKernel, x::Vector, y::Vector)
-    return KLDivergence()(x, y)
+    return Distances.KLDivergence()(x, y)
 end
 
 function similarity(k::Correlation, x::Vector, y::Vector)
@@ -38,6 +38,6 @@ function similarity(k::Correlation, x::Vector, y::Vector)
 end
 
 function similarity(k::InformationCorrelation, x::Vector, y::Vector)
-    return abs(sign(cor(x, y)) * sqrt(1 - 2 ^ (-2 * KLDivergence()(x, y))))
+    return abs(sign(cor(x, y)) * sqrt(1 - 2 ^ (-2 * Distances.KLDivergence()(x, y))))
 end
 
