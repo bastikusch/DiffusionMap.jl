@@ -7,8 +7,8 @@ using Plots, LinearAlgebra, Statistics
 export
 # kernels.jl
 Kernel, DiffusionMap, DiffusionProblem,
-InverseDistance, Gaussian, Linear,
-Polynomial, LaplaceKernel, similarity,
+InverseDistance, Gaussian, KLKernel,
+Correlation, InformationCorrelation, similarity,
 
 # diffusion.jl
 thresholding!, calculateAdjacency,
