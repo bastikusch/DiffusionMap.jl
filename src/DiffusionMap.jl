@@ -2,12 +2,12 @@
 module DiffusionMap
 
 # dependency
-using Plots, LinearAlgebra, Statistics, StatsBase
+using Plots, LinearAlgebra, Statistics, StatsBase, InformationMeasures
 
 export
 # kernels.jl
 Kernel, DiffusionMap, DiffusionProblem,
-InverseDistance, Gaussian, KLKernel,
+InverseDistance, Gaussian, MutualInformation,
 Correlation, InformationCorrelation, similarity,
 
 # diffusion.jl
