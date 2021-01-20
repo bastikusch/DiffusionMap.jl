@@ -34,7 +34,7 @@ function similarity(k::MutualInformation, x::Vector, y::Vector)
 end
 
 function similarity(k::Correlation, x::Vector, y::Vector)
-    return abs(cor(x, y))
+    return x==y ? 0 : abs(cor(x, y))
 end
 
 function similarity(k::InformationCorrelation, x::Vector, y::Vector)
