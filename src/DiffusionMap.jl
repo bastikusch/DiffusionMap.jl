@@ -8,7 +8,7 @@ export
 # kernels.jl
 AbstractKernel, DiffusionMap, DiffusionProblem,
 InverseDistance, Gaussian, MutualInformation,
-Correlation, InformationCorrelation, similarity,
+Correlation, similarity, InformationCorrelation,
 
 # diffusion.jl
 thresholding!, calculateAdjacency,
