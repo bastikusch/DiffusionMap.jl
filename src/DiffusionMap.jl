@@ -6,7 +6,7 @@ using Plots, LinearAlgebra, Statistics, StatsBase, InformationMeasures
 
 export
 # kernels.jl
-Kernel, DiffusionMap, DiffusionProblem,
+AbstractKernel, DiffusionMap, DiffusionProblem,
 InverseDistance, Gaussian, MutualInformation,
 Correlation, InformationCorrelation, similarity,
 

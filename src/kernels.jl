@@ -39,6 +39,7 @@ end
     return ret == 0.0 ? 0.0 : exp(-ret /(2 * k.σ^2))
 end
 
+
 function similarity(k::MutualInformation, x::Vector, y::Vector)
     return get_mutual_information(x, y)
 end

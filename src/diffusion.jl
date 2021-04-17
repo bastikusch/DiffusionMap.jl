@@ -2,7 +2,7 @@
 
 struct DiffusionProblem
     data::Matrix
-    kernel::Kernel
+    kernel::AbstractKernel
     threshold::Int64
     laplaceMathod::Symbol
 end
