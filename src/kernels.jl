@@ -2,31 +2,41 @@
 ## Kernel types
 
 # abstract kernel supertype, all others inherit from Kernel
-abstract type Kernel end
+abstract type AbstractKernel end
 
 # all subtypes characterize similarity calculations
-struct InverseDistance <: Kernel end
+struct InverseDistance <: AbstractKernel end
 
-struct Gaussian <: Kernel
+struct Gaussian <: AbstractKernel
     σ::Float64
 end
 Gaussian() = Gaussian(1.0)
 
-struct MutualInformation <: Kernel end
+struct MutualInformation <: AbstractKernel end
 
-struct Correlation <: Kernel end
+struct Correlation <: AbstractKernel end
 
-struct InformationCorrelation <: Kernel end
+struct InformationCorrelation <: AbstractKernel end
 
 ## similarity computation for each kernel
 
 # multiple dispatch over kernel types
-function similarity(k::InverseDistance, x::Vector, y::Vector)
-    return x==y ? 0 : 1 / norm(x .- y)
+@inline function similarity(k::InverseDistance, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+    ret = zero(T)
+    m = length(x)
+    @inbounds @simd for k in 1:m
+        ret += (x[k] - y[k])^2
+    end
+    return ret == 0.0 ? 0.0 : 1 / sqrt(ret)
 end
 
-function similarity(k::Gaussian, x::Vector, y::Vector)
-    return exp(-(norm(x .- y)^2) / (2 * k.σ^2))
+@inline function similarity(k::Gaussian, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+    ret = zero(T)
+    m = length(x)
+    @inbounds @simd for k in 1:m
+        ret += (x[k] - y[k])^2
+    end
+    return ret == 0.0 ? 0.0 : exp(-ret /(2 * k.σ^2))
 end
 
 function similarity(k::MutualInformation, x::Vector, y::Vector)

@@ -30,19 +30,30 @@ function Base.show(io::IO, ::MIME"text/plain", dm::Diffusionmap)
     end
 end
 
-## diffusion map functions
+##..........................................................................................
+# diffusion map functions
 
 # calculation Adjacency matrix
-function calculateAdjacency(dP::DiffusionProblem)
-    l = size(dP.data, 1)
-    A = zeros(l, l)
-    for i = 1:l
-        for j = i+1:l
-            A[i, j] = similarity(dP.kernel, dP.data[i,:], dP.data[j,:])
+# function calculateAdjacency(dP::DiffusionProblem)
+#     l = size(dP.data, 1)
+#     A = zeros(l, l)
+#     for i = 1:l
+#         for j = i+1:l
+#             A[i, j] = similarity(dP.kernel, dP.data[i,:], dP.data[j,:])
+#         end
+#     end
+#     A = A + transpose(A)
+#     return A
+# end
+function calculateAdjacency(dp::DiffusionProblem)
+    n = size(dp.data)[1]
+    mat = zeros(T, n, n)
+    @threads for j in 1:n
+        @views for i in j+1:n
+            mat[i,j] = similarity(dp.kernel, dp.data[i, :], dp.data[j, :])
         end
     end
-    A = A + transpose(A)
-    return A
+    return Symmetric(mat, :L)
 end
 
 # thresholding to control local connectance
