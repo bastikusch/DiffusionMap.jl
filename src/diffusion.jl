@@ -48,7 +48,7 @@ end
 function calculateAdjacency(dp::DiffusionProblem)
     n = size(dp.data)[1]
     mat = zeros(T, n, n)
-    @threads for j in 1:n
+    Threads.@threads for j in 1:n
         @views for i in j+1:n
             mat[i,j] = similarity(dp.kernel, dp.data[i, :], dp.data[j, :])
         end
