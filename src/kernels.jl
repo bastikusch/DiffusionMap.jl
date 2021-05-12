@@ -12,11 +12,7 @@ struct Gaussian <: AbstractKernel
 end
 Gaussian() = Gaussian(1.0)
 
-struct MutualInformation <: AbstractKernel end
-
-struct Correlation <: AbstractKernel end
-
-struct InformationCorrelation <: AbstractKernel end
+struct Cosine <: AbstractKernel end
 
 ## similarity computation for each kernel
 
@@ -39,15 +35,6 @@ end
     return ret == 0.0 ? 0.0 : exp(-ret /(2 * k.σ^2))
 end
 
-function similarity(k::MutualInformation, x::Vector, y::Vector)
-    return get_mutual_information(x, y)
+function similarity(k::Cosine, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+    return (x'*y)/(norm(x)*norm(y))
 end
-
-function similarity(k::Correlation, x::Vector, y::Vector)
-    return x==y ? 0 : abs(cor(x, y))
-end
-
-function similarity(k::InformationCorrelation, x::Vector, y::Vector)
-    return abs(sign(cor(x, y)) * sqrt(1 - 2 ^ (-2 * (get_mutual_information(x, y)))))
-end
-

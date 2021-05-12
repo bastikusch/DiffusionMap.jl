@@ -2,24 +2,26 @@
 module DiffusionMap
 
 # dependency
-using Plots, LinearAlgebra, Statistics, StatsBase, InformationMeasures
+using LinearAlgebra, Statistics, StatsBase, Arpack, KrylovKit, SparseArrays
 
 export
 # kernels.jl
-AbstractKernel, DiffusionMap, DiffusionProblem,
-InverseDistance, Gaussian, MutualInformation,
-Correlation, similarity, InformationCorrelation,
+AbstractKernel, InverseDistance,
+Gaussian, Cosine, similarity,
 
-# diffusion.jl
-thresholding!, calculateAdjacency,
-calculateLaplacian, calculateDiffusionMap,
+# diffusionTypes.jl
+AbstractLaplacianMethod, GraphLaplacian,
+CoifmanLaplacian, AbstractEigenSolver,
+FullEigen, ArpackEigen, KrylovEigen,
+DiffusionMap, DiffusionProblem,
 
-# utils.jl
-standardize!, visualize,
-multiVisualize, addTitles!
+# diffusionCalculation.jl
+solve
+
 
 include("kernels.jl")
-include("diffusion.jl")
-include("utils.jl")
+include("diffusionTypes.jl")
+include("diffusionCalculation.jl")
+# include("utils.jl")
 
 end # module
