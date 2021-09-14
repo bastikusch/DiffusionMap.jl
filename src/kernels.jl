@@ -5,19 +5,23 @@
 abstract type AbstractKernel end
 
 # all subtypes characterize similarity calculations
-struct InverseDistance <: AbstractKernel end
+struct InverseDistanceKernel <: AbstractKernel end
 
-struct Gaussian <: AbstractKernel
+struct GaussianKernel <: AbstractKernel
     σ::Float64
 end
-Gaussian() = Gaussian(1.0)
+GaussianKernel() = GaussianKernel(1.0)
 
-struct Cosine <: AbstractKernel end
+struct CosineKernel <: AbstractKernel end
+
+struct CustomKernel <: AbstractKernel
+    func::Function
+end
 
 ## similarity computation for each kernel
 
 # multiple dispatch over kernel types
-@inline function similarity(k::InverseDistance, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+@inline function similarity(k::InverseDistanceKernel, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
     ret = zero(T)
     m = length(x)
     @inbounds @simd for k in 1:m
@@ -26,7 +30,7 @@ struct Cosine <: AbstractKernel end
     return ret == 0.0 ? 0.0 : 1 / sqrt(ret)
 end
 
-@inline function similarity(k::Gaussian, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+@inline function similarity(k::GaussianKernel, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
     ret = zero(T)
     m = length(x)
     @inbounds @simd for k in 1:m
@@ -35,6 +39,10 @@ end
     return ret == 0.0 ? 0.0 : exp(-ret /(2 * k.σ^2))
 end
 
-function similarity(k::Cosine, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+function similarity(k::CosineKernel, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
     return (x'*y)/(norm(x)*norm(y))
+end
+
+function similarity(k::CustomKernel, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+    return k.func(x,y)
 end

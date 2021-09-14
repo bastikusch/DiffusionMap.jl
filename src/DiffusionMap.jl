@@ -6,14 +6,15 @@ using LinearAlgebra, Statistics, StatsBase, Arpack, KrylovKit, SparseArrays
 
 export
 # kernels.jl
-AbstractKernel, InverseDistance,
-Gaussian, Cosine, similarity,
+AbstractKernel, InverseDistanceKernel,
+GaussianKernel, CosineKernel, CustomKernel, similarity,
 
 # diffusionTypes.jl
-AbstractLaplacianMethod, GraphLaplacian,
-CoifmanLaplacian, AbstractEigenSolver,
+AbstractLaplacianMethod, NormalizedGraphLaplacian,
+NormalizedAdjacencyLaplacian, AbstractEigenSolver,
 FullEigen, ArpackEigen, KrylovEigen,
-DiffusionMap, DiffusionProblem,
+DiffusionMap, DiffusionProblem, eigenvals, 
+eigenvecs,
 
 # diffusionCalculation.jl
 solve

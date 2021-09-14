@@ -37,23 +37,23 @@ function thresholding!(A::Matrix, threshold::Int)
     end
 end
 
-function get_laplacian(A::Matrix, method::GraphLaplacian)
+function get_laplacian(A::Matrix, method::NormalizedGraphLaplacian)
     D = Diagonal(sum(A, dims=2)[:])
     L = D - A
     return inv(D) * L
 end
 
 
-function get_laplacian(A::Matrix, method::CoifmanLaplacian)
+function get_laplacian(A::Matrix, method::NormalizedAdjacencyLaplacian)
     D = Diagonal(sum(A, dims=2)[:])
     return inv(D) * A
 end
 
-function eigen_sort(method::GraphLaplacian)
+function eigen_sort(method::NormalizedGraphLaplacian)
     return :SR
 end
 
-function eigen_sort(method::CoifmanLaplacian)
+function eigen_sort(method::NormalizedAdjacencyLaplacian)
     return :LR
 end
 
