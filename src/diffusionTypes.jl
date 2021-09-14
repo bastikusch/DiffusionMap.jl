@@ -46,9 +46,10 @@ struct DiffusionProblem
 end
 
 DiffusionProblem(data, kernel) = DiffusionProblem(data, kernel, NormalizedGraphLaplacian(), 0)
-DiffusionProblem(data, func::Function) = DiffusionProblem(data, kernel, CustomKernel(func), 0)
 DiffusionProblem(data, kernel, threshold) = DiffusionProblem(data, kernel, NormalizedGraphLaplacian(), threshold)
-DiffusionProblem(data, func::Function, threshold) = DiffusionProblem(data, kernel, CustomKernel(func), threshold)
+
+DiffusionProblem(data, func::Function) = DiffusionProblem(data, CustomKernel(func), 0)
+DiffusionProblem(data, func::Function, threshold) = DiffusionProblem(data, CustomKernel(func), threshold)
 
 function Base.show(io::IO, ::MIME"text/plain", dp::DiffusionProblem)
     println(io, "DiffusionProblem")
