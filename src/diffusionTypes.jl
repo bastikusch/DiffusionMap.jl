@@ -50,6 +50,7 @@ DiffusionProblem(data, kernel, threshold) = DiffusionProblem(data, kernel, Norma
 
 DiffusionProblem(data, func::Function) = DiffusionProblem(data, CustomKernel(func), 0)
 DiffusionProblem(data, func::Function, threshold) = DiffusionProblem(data, CustomKernel(func), threshold)
+DiffusionProblem(data, func::Function, laplaceMethod, threshold) = DiffusionProblem(data, CustomKernel(func), laplaceMethod, threshold)
 
 function Base.show(io::IO, ::MIME"text/plain", dp::DiffusionProblem)
     println(io, "DiffusionProblem")
