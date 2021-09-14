@@ -10,9 +10,11 @@ AbstractKernel, InverseDistanceKernel,
 GaussianKernel, CosineKernel, CustomKernel, similarity,
 
 # diffusionTypes.jl
-AbstractLaplacianMethod, NormalizedGraphLaplacian,
-NormalizedAdjacencyLaplacian, AbstractEigenSolver,
-FullEigen, ArpackEigen, KrylovEigen,
+AbstractLaplacian, RowNormalizedLaplacian,
+Adjacency, NormalizedAdjacency, 
+SymmetricLaplacian, RegularLaplacian,
+AbstractEigenSolver, FullEigen,
+ArpackEigen, KrylovEigen,
 DiffusionMap, DiffusionProblem, eigenvals, 
 eigenvecs,
 

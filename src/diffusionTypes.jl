@@ -1,17 +1,35 @@
 ## types for  diffusionmap calculation
 
-abstract type AbstractLaplacianMethod end
+abstract type AbstractLaplacian end
 
-struct NormalizedGraphLaplacian <: AbstractLaplacianMethod end
+struct RowNormalizedLaplacian <: AbstractLaplacian end
 
-function Base.show(io::IO, ::MIME"text/plain", l::NormalizedGraphLaplacian)
-    println(io, "NormalizedGraphLaplacian")  
+function Base.show(io::IO, ::MIME"text/plain", l::RowNormalizedLaplacian)
+    println(io, "RowNormalizedLaplacian")  
 end
 
-struct NormalizedAdjacencyLaplacian <: AbstractLaplacianMethod end
+struct Adjacency <: AbstractLaplacian end
 
-function Base.show(io::IO, ::MIME"text/plain", l::NormalizedAdjacencyLaplacian)
-    println(io, "NormalizedAdjacencyLaplacian")   
+function Base.show(io::IO, ::MIME"text/plain", l::Adjacency)
+    println(io, "Adjacency")   
+end
+
+struct NormalizedAdjacency <: AbstractLaplacian end
+
+function Base.show(io::IO, ::MIME"text/plain", l::NormalizedAdjacency)
+    println(io, "NormalizedAdjacency")   
+end
+
+struct SymmetricLaplacian <: AbstractLaplacian end
+
+function Base.show(io::IO, ::MIME"text/plain", l::SymmetricLaplacian)
+    println(io, "SymmetricLaplacian")   
+end
+
+struct RegularLaplacian <: AbstractLaplacian end
+
+function Base.show(io::IO, ::MIME"text/plain", l::RegularLaplacian)
+    println(io, "RegularLaplacian")   
 end
 
 abstract type AbstractEigenSolver end

@@ -37,24 +37,30 @@ function thresholding!(A::Matrix, threshold::Int)
     end
 end
 
-function get_laplacian(A::Matrix, method::NormalizedGraphLaplacian)
+function get_laplacian(A::Matrix, method::RowNormalizedLaplacian)
     D = Diagonal(sum(A, dims=2)[:])
     L = D - A
     return inv(D) * L
 end
 
-
-function get_laplacian(A::Matrix, method::NormalizedAdjacencyLaplacian)
+function get_laplacian(A::Matrix, method::Adjacency)
     D = Diagonal(sum(A, dims=2)[:])
     return inv(D) * A
 end
 
-function eigen_sort(method::NormalizedGraphLaplacian)
-    return :SR
+function get_laplacian(A::Matrix, method::NormalizedAdjacency)
+    return A
 end
 
-function eigen_sort(method::NormalizedAdjacencyLaplacian)
-    return :LR
+function get_laplacian(A::Matrix, method::SymmetricLaplacian)
+    D = Diagonal(sum(A, dims=2)[:])
+    L = D - A
+    return D^(-1/2) * L * D^(-1/2)
+end
+
+function get_laplacian(A::Matrix, method::RegularLaplacian)
+    D = Diagonal(sum(A, dims=2)[:])
+    return D - A
 end
 
 # eigen decomposition, short cut through all diffusion steps
@@ -62,7 +68,7 @@ function solve(dP::DiffusionProblem, eigenSolver::T) where T <: AbstractEigenSol
     A = get_adjacency(dP.data, dP.kernel)
     thresholding!(A, dP.threshold)
     L = get_laplacian(A, dP.laplaceMethod)
-    sort_for = eigen_sort(dP.laplaceMethod)
+    sort_for = typeof(dP.laplaceMethod)==Adjacency || typeof(dP.laplaceMethod)==NormalizedAdjacency ? :LR : :SR
     λ, ϕ = eigen_solve(L, eigenSolver, sort_for)
     return Diffusionmap(λ, ϕ, dP.laplaceMethod)
 end
