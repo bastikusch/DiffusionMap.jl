@@ -4,13 +4,13 @@ abstract type AbstractLaplacianMethod end
 
 struct NormalizedGraphLaplacian <: AbstractLaplacianMethod end
 
-function Base.show(io::IO, ::MIME"text/plain", l::GraphLaplacian)
+function Base.show(io::IO, ::MIME"text/plain", l::NormalizedGraphLaplacian)
     println(io, "NormalizedGraphLaplacian")  
 end
 
 struct NormalizedAdjacencyLaplacian <: AbstractLaplacianMethod end
 
-function Base.show(io::IO, ::MIME"text/plain", l::CoifmanLaplacian)
+function Base.show(io::IO, ::MIME"text/plain", l::NormalizedAdjacencyLaplacian)
     println(io, "NormalizedAdjacencyLaplacian")   
 end
 
