@@ -22,22 +22,21 @@ As a kernel for computing the adjacency matrix the following ones can be used
 kernel | Description
 ------------ | -------------
 InverseDistanceKernel() | (default) Computes the similarity of two vectors as the inverse of their euclidean distance.
-GaussianKernel(\alpha) | Computes the similarity of two vectors with the gaussian kernel formula and parameter \alpha.
+GaussianKernel(<img src="https://render.githubusercontent.com/render/math?math=\alpha">.) | Computes the similarity of two vectors with the gaussian kernel formula and parameter <img src="https://render.githubusercontent.com/render/math?math=\alpha">.
 CustomKernel(func::Function) | Computes the similarity of two vectors by using a custom function that has two vectors as inputs and returns a scalar.
 
 Supported types of Laplacian matrices are
 
-kernel | Description
+laplace_type | Description
 ------------ | -------------
-InverseDistanceKernel() | (default) Computes the similarity of two vectors as the inverse of their euclidean distance.
-GaussianKernel(\alpha) | Computes the similarity of two vectors with the gaussian kernel formula and parameter \alpha.
-CustomKernel(func::Function) | Computes the similarity of two vectors by using a custom function that has two vectors as inputs and returns a scalar.
+RegularLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D-A">
+RowNormalizedLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*(D-A)">
+SymmetricLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1/2}*(D-A)*D^{-1/2}">
+Adjacency() | <img src="https://render.githubusercontent.com/render/math?math=L=A">
+NormalizedAdjacency | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*A">
 
-As an alternative to the given kernel classes, one can use a function with two variables as the kernel. The functions inputs should be two vectors and give back a scalar. Be careful to satisfy the kernel properties (positive semi-definiteness, symmetry,...). The example here is the inner product of two vectors.
-```julia
-kernel_function = (x,y) -> x'*y
-dp_func = DiffusionProblem(data, kernel_function, laplaceMethod, nextNeighbors)
-```
+As a threshold, any integer betwen 0 and n (n being the number of data rows) can be chosen, the default is n.
+Having framed the diffusion map problem, one can solve it with
 
 Secondly, specify the method for the eigen decomposition (full eigen decompostion with `FullEigen()`, partial decomposition of the n first eigen vectors with either `ArpackEigen(n)`, or `KrylovEigen(n)`) and solve the `DiffusionProblem`.
 
@@ -45,6 +44,15 @@ Secondly, specify the method for the eigen decomposition (full eigen decompostio
 eigenMethod = FullEigen()
 dm = solve(dp, eigenMethod)
 ```
+kernel | Description
+------------ | -------------
+RegularLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D-A">
+RowNormalizedLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*(D-A)">
+SymmetricLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1/2}*(D-A)*D^{-1/2}">
+Adjacency() | <img src="https://render.githubusercontent.com/render/math?math=L=A">
+NormalizedAdjacency | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*A">
+
+
 The fields of the resulting `Diffusionmap` struct are a vector of eigenvalues, accessible by
 
 ```julia
