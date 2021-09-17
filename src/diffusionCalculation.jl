@@ -75,7 +75,7 @@ function solve(dm::Diffusionmap, eigenSolver::T) where T <: AbstractEigenSolver
     A = get_adjacency(dm.data, dm.kernel)
     thresholding!(A, dm.threshold)
     L = get_laplacian(A, dm.laplace_type)
-    sort_for = typeof(dm.laplace_type)==Adjacency || typeof(dm.laplaceMethod)==NormalizedAdjacency ? :LR : :SR
+    sort_for = typeof(dm.laplace_type)==Adjacency || typeof(dm.laplace_type)==NormalizedAdjacency ? :LR : :SR
     λ, ϕ = eigen_solve(L, eigenSolver, sort_for)
     return λ, ϕ
 end
