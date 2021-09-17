@@ -71,7 +71,7 @@ function eigen_solve(L::Matrix, eigenSolver::KrylovEigen, sort_for::Symbol)
 end
 
 # solve the whole Diffusionmap
-function solve(dm::Diffusionmap, eigenSolver::T) where T <: AbstractEigenSolver
+function solve(dm::Diffusionmap; eigenSolver::T=FullEigen()) where T <: AbstractEigenSolver
     A = get_adjacency(dm.data, dm.kernel)
     thresholding!(A, dm.threshold)
     L = get_laplacian(A, dm.laplace_type)
