@@ -8,9 +8,9 @@ Add package by opening the Julia package manager with "]" then type in REPL
 add https://github.com/bastikusch/DiffusionMap.jl
 ```
 
-This package is a concise implementation of the diffusion mapping method. It takes a given dataset in matrix form (here a standardized along the columns)
+This package is a concise implementation of the diffusion mapping method. It takes a given dataset in matrix form
 ```julia
-data = standardize(ZScoreTransform, randn(1000,20), dims=2)
+data = rand(100,10)
 ```
 and frames the diffusion map problem as follows.
 
@@ -30,40 +30,39 @@ Supported types of Laplacian matrices are
 laplace_type | Description
 ------------ | -------------
 RegularLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D-A">
-RowNormalizedLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*(D-A)">
+RowNormalizedLaplacian() | (default)<img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*(D-A)">
 SymmetricLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1/2}*(D-A)*D^{-1/2}">
 Adjacency() | <img src="https://render.githubusercontent.com/render/math?math=L=A">
 NormalizedAdjacency | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*A">
 
-As a threshold, any integer betwen 0 and n (n being the number of data rows) can be chosen, the default is n.
-Having framed the diffusion map problem, one can solve it with
+As a threshold, any integer betwen 0 and n (n being the number of data rows) can be chosen, the default is n
 
-Secondly, specify the method for the eigen decomposition (full eigen decompostion with `FullEigen()`, partial decomposition of the n first eigen vectors with either `ArpackEigen(n)`, or `KrylovEigen(n)`) and solve the `DiffusionProblem`.
+Having framed the diffusion map problem, one can perform the eigen decomposition of the Laplacian with
 
 ```julia
-eigenMethod = FullEigen()
-dm = solve(dp, eigenMethod)
+evals, evecs = solve(dm, eigensolver=FullEigen())
 ```
-kernel | Description
+eigensolver | Description
 ------------ | -------------
-RegularLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D-A">
-RowNormalizedLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*(D-A)">
-SymmetricLaplacian() | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1/2}*(D-A)*D^{-1/2}">
-Adjacency() | <img src="https://render.githubusercontent.com/render/math?math=L=A">
-NormalizedAdjacency | <img src="https://render.githubusercontent.com/render/math?math=L=D^{-1}*A">
+FullEigen() | Uses the method `eigen(L)` from the package `LinearAlgebra.jl`
+ArpackEigen(n_first) | Uses the method `eigs(L)` from the package `Arpack.jl` to get the n first eigenvectors
+KrylovEigen(n_first) | Uses the method `eigsolve(L)` from the package `KrylovKit.jl` to get the n first eigenvectors
 
-
-The fields of the resulting `Diffusionmap` struct are a vector of eigenvalues, accessible by
+## Example
 
 ```julia
-eval = eigenvals(dm)
-```
-as well as the vector of eigenvectors,
-```julia
-evec = eigenvecs(dm)
-```
+using StatsBase, Plots, DiffusionMap
 
-Scatter plotting eigenvectors and coloring them by the data points value in a given underlying property (here each mapped data point´s first dimension) can be done as follows.
-```julia
-scatter(ev[2], ev[3], marker_z=data[:,1], label="")
+# put any data matrix you want here
+data = standardize(ZScoreTransform, rand(1000,20), dims=2)
+
+# Frame diffusion problem
+dm = Diffusionmap(data, kernel = InverseDistanceKernel(), laplace_type = RowNormalizedLaplacian(), threshold=5)
+
+# Perform eigen decomposition
+evals, evecs = solve(dm, eigensolver=FullEigen());
+
+# Scatter plot eigen vectors, cloured by one arbitrary data column
+scatter(evecs[2], evecs[3], marker_z=data[:,1], label="")
+
 ```
