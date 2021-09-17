@@ -1,30 +1,37 @@
 # DiffusionMap
 
-Add package by typing "]" in REPL, then write
+## Introduction
+
+Add package by opening the Julia package manager with "]" then type in REPL
 
 ```julia
-] add https://github.com/bastikusch/DiffusionMap.jl
+add https://github.com/bastikusch/DiffusionMap.jl
 ```
 
-## Example
-
-```julia
-using StatsBase, Plots, DiffusionMap
-```
-
-For a given dataset in matrix form (here standardized along the columns)
+This package is a concise implementation of the diffusion mapping method. It takes a given dataset in matrix form (here a standardized along the columns)
 ```julia
 data = standardize(ZScoreTransform, randn(1000,20), dims=2)
 ```
-one can perform the diffusion mapping method in two steps. First, formulate the specified `DiffusionProblem` by choosing a kernel, a representation for the laplace method and the number of nextneighbors used in the algorithm.
+and frames the diffusion map problem as follows.
 
 ```julia
-nextNeighbors = 5
-kernel = InverseDistanceKernel() # alternatively GaussianKernel(alpha)
-laplaceMethod = NormalizedGraphLaplacian() # alternatively NormalizedAdjacencyLaplacian()
-
-dp = DiffusionProblem(data, kernel, laplaceMethod, nextNeighbors)
+dp = DiffusionProblem(data, kernel=InverseDistanceKernel(), laplace_type=RowNormalizedLaplacian(), threshold=size(data,1))
 ```
+As a kernel for computing the adjacency matrix the following ones can be used
+
+kernel | Description
+------------ | -------------
+InverseDistanceKernel() | (default) Computes the similarity of two vectors as the inverse of their euclidean distance.
+GaussianKernel(\alpha) | Computes the similarity of two vectors with the gaussian kernel formula and parameter \alpha.
+CustomKernel(func::Function) | Computes the similarity of two vectors by using a custom function that has two vectors as inputs and returns a scalar.
+
+Supported types of Laplacian matrices are
+
+kernel | Description
+------------ | -------------
+InverseDistanceKernel() | (default) Computes the similarity of two vectors as the inverse of their euclidean distance.
+GaussianKernel(\alpha) | Computes the similarity of two vectors with the gaussian kernel formula and parameter \alpha.
+CustomKernel(func::Function) | Computes the similarity of two vectors by using a custom function that has two vectors as inputs and returns a scalar.
 
 As an alternative to the given kernel classes, one can use a function with two variables as the kernel. The functions inputs should be two vectors and give back a scalar. Be careful to satisfy the kernel properties (positive semi-definiteness, symmetry,...). The example here is the inner product of two vectors.
 ```julia
