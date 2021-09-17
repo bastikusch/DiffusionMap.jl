@@ -1,3 +1,4 @@
+# diffusion map calculation
 
 function get_adjacency(data::Matrix, kernel::T) where T <: AbstractKernel
     n = size(data)[1]
@@ -10,20 +11,8 @@ function get_adjacency(data::Matrix, kernel::T) where T <: AbstractKernel
     return A
 end
 
-# function thresholding!(A::Matrix, threshold::Int)
-#     if threshold > 0
-#         n = size(A,1)
-#         cutOff = sort(A,dims=1,rev = true)[threshold,:]
-#         Threads.@threads for j in 1:n
-#                 @views for i in j:n
-#                         A[i,j] = A[j,i] = (A[i,j] < cutOff[i]) && (A[i,j] < cutOff[j]) ? 0.0 : A[i,j]
-#                 end
-#         end
-#     end
-# end
-
 function thresholding!(A::Matrix, threshold::Int)
-    if threshold > 0
+    if threshold < size(A,1)
         n = size(A,1)
         cutOff = rand(size(A,1))
         Threads.@threads for i in 1:n
@@ -43,12 +32,12 @@ function get_laplacian(A::Matrix, method::RowNormalizedLaplacian)
     return inv(D) * L
 end
 
-function get_laplacian(A::Matrix, method::Adjacency)
+function get_laplacian(A::Matrix, method::NormalizedAdjacency)
     D = Diagonal(sum(A, dims=2)[:])
     return inv(D) * A
 end
 
-function get_laplacian(A::Matrix, method::NormalizedAdjacency)
+function get_laplacian(A::Matrix, method::Adjacency)
     return A
 end
 
@@ -61,16 +50,6 @@ end
 function get_laplacian(A::Matrix, method::RegularLaplacian)
     D = Diagonal(sum(A, dims=2)[:])
     return D - A
-end
-
-# eigen decomposition, short cut through all diffusion steps
-function solve(dP::DiffusionProblem, eigenSolver::T) where T <: AbstractEigenSolver
-    A = get_adjacency(dP.data, dP.kernel)
-    thresholding!(A, dP.threshold)
-    L = get_laplacian(A, dP.laplaceMethod)
-    sort_for = typeof(dP.laplaceMethod)==Adjacency || typeof(dP.laplaceMethod)==NormalizedAdjacency ? :LR : :SR
-    λ, ϕ = eigen_solve(L, eigenSolver, sort_for)
-    return Diffusionmap(λ, ϕ, dP.laplaceMethod)
 end
 
 function eigen_solve(L::Matrix, eigenSolver::FullEigen, sort_for::Symbol)
@@ -89,6 +68,16 @@ end
 function eigen_solve(L::Matrix, eigenSolver::KrylovEigen, sort_for::Symbol)
     λ, ϕ = eigsolve(sparse(L), eigenSolver.n_first, sort_for)
     return real.(λ), real.(ϕ)
+end
+
+# solve the whole Diffusionmap
+function solve(dm::Diffusionmap, eigenSolver::T) where T <: AbstractEigenSolver
+    A = get_adjacency(dm.data, dm.kernel)
+    thresholding!(A, dm.threshold)
+    L = get_laplacian(A, dm.laplace_type)
+    sort_for = typeof(dm.laplace_type)==Adjacency || typeof(dm.laplaceMethod)==NormalizedAdjacency ? :LR : :SR
+    λ, ϕ = eigen_solve(L, eigenSolver, sort_for)
+    return λ, ϕ
 end
 
 

@@ -1,102 +1,21 @@
 ## types for  diffusionmap calculation
 
-abstract type AbstractLaplacian end
 
-struct RowNormalizedLaplacian <: AbstractLaplacian end
-
-function Base.show(io::IO, ::MIME"text/plain", l::RowNormalizedLaplacian)
-    println(io, "RowNormalizedLaplacian")  
-end
-
-struct Adjacency <: AbstractLaplacian end
-
-function Base.show(io::IO, ::MIME"text/plain", l::Adjacency)
-    println(io, "Adjacency")   
-end
-
-struct NormalizedAdjacency <: AbstractLaplacian end
-
-function Base.show(io::IO, ::MIME"text/plain", l::NormalizedAdjacency)
-    println(io, "NormalizedAdjacency")   
-end
-
-struct SymmetricLaplacian <: AbstractLaplacian end
-
-function Base.show(io::IO, ::MIME"text/plain", l::SymmetricLaplacian)
-    println(io, "SymmetricLaplacian")   
-end
-
-struct RegularLaplacian <: AbstractLaplacian end
-
-function Base.show(io::IO, ::MIME"text/plain", l::RegularLaplacian)
-    println(io, "RegularLaplacian")   
-end
-
-abstract type AbstractEigenSolver end
-
-struct FullEigen <: AbstractEigenSolver end
-
-function Base.show(io::IO, ::MIME"text/plain", l::FullEigen)
-    println(io, "FullEigen")   
-end
-
-struct ArpackEigen <: AbstractEigenSolver
-    n_first::Int
-end
-
-function Base.show(io::IO, ::MIME"text/plain", l::ArpackEigen)
-    println(io, "ArpackEigen")   
-end
-
-struct KrylovEigen <: AbstractEigenSolver
-    n_first::Int
-end
-
-function Base.show(io::IO, ::MIME"text/plain", l::KrylovEigen)
-    println(io, "KrylovEigen")   
-end
-
-struct DiffusionProblem
+struct Diffusionmap
     data::Matrix
     kernel::AbstractKernel
-    laplaceMethod::AbstractLaplacianMethod
+    laplace_type::AbstractLaplacian
     threshold::Int64
 end
 
-DiffusionProblem(data, kernel) = DiffusionProblem(data, kernel, NormalizedGraphLaplacian(), 0)
-DiffusionProblem(data, kernel, threshold) = DiffusionProblem(data, kernel, NormalizedGraphLaplacian(), threshold)
+Diffusionmap(data; kernel::AbstractKernel=InverseDistanceKernel(), laplace_type::AbstractLaplacian=RowNormalizedLaplacian(), threshold::Int64=size(data,1)) = Diffusionmap(data, kernel, laplace_type, threshold)
+Diffusionmap(data, func::Function; laplace_type::AbstractLaplacian=RowNormalizedLaplacian(), threshold::Int64=size(data,1)) = Diffusionmap(data, CustomKernel(func), laplace_type, threshold)
 
-DiffusionProblem(data, func::Function) = DiffusionProblem(data, CustomKernel(func), 0)
-DiffusionProblem(data, func::Function, threshold) = DiffusionProblem(data, CustomKernel(func), threshold)
-DiffusionProblem(data, func::Function, laplaceMethod, threshold) = DiffusionProblem(data, CustomKernel(func), laplaceMethod, threshold)
 
-function Base.show(io::IO, ::MIME"text/plain", dp::DiffusionProblem)
-    println(io, "DiffusionProblem")
+function Base.show(io::IO, ::MIME"text/plain", dp::Diffusionmap)
+    println(io, "Diffusionmap")
     println(io, "Kernel = $(typeof(dp.kernel))")
-    println(io, "Laplace method = $(dp.laplaceMethod)")
+    println(io, "Laplace type = $(dp.laplace_type)")
     println(io, "Threshold = $(dp.threshold)")   
 end
 
-struct Diffusionmap
-    λ::Vector
-    ϕ::Vector
-    laplaceMethod::AbstractLaplacianMethod
-end
-
-function eigenvecs(dm::Diffusionmap)
-    return dm.ϕ
-end
-
-function eigenvals(dm::Diffusionmap)
-    return dm.λ
-end
-
-function Base.show(io::IO, ::MIME"text/plain", dm::Diffusionmap)
-    println(io, "Diffusionmap ($(length(dm.ϕ)))")
-    println(io, "Type: $(dm.laplaceMethod)")
-    dim = min(5,length(dm.λ))
-    println(io, "First $(dim) Eigen Values:")
-    for i in 1:dim
-        println(io, dm.λ[i])
-    end
-end

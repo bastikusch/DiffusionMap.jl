@@ -2,27 +2,33 @@
 module DiffusionMap
 
 # dependency
-using LinearAlgebra, Statistics, StatsBase, Arpack, KrylovKit, SparseArrays
+using LinearAlgebra, Arpack, KrylovKit, SparseArrays
 
 export
 # kernels.jl
 AbstractKernel, InverseDistanceKernel,
-GaussianKernel, CosineKernel, CustomKernel, similarity,
+GaussianKernel, CosineKernel, CustomKernel,
 
-# diffusionTypes.jl
+# laplacians.jl
 AbstractLaplacian, RowNormalizedLaplacian,
 Adjacency, NormalizedAdjacency, 
-SymmetricLaplacian, RegularLaplacian,
+SymmetricLaplacian, RegularLaplacian, 
+
+# eigensolvers.jl
 AbstractEigenSolver, FullEigen,
 ArpackEigen, KrylovEigen,
-DiffusionMap, DiffusionProblem, eigenvals, 
-eigenvecs,
+
+# diffusionTypes.jl
+
+Diffusionmap,
 
 # diffusionCalculation.jl
-solve
+get_laplacian, get_adjacency, thresholding!, solve
 
 
 include("kernels.jl")
+include("laplacians.jl")
+include("eigensolvers.jl")
 include("diffusionTypes.jl")
 include("diffusionCalculation.jl")
 # include("utils.jl")
