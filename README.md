@@ -77,4 +77,4 @@ evals, evecs = solve(dm, eigensolver=FullEigen());
 scatter(evecs[2], evecs[3], marker_z=data[:,1], label="")
 
 ```
-![Alt text](diffusionmap_example.png?raw=true)
+![Diffuson map example](diffusionmap_example.png?raw=true)
