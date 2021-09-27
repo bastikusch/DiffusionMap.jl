@@ -15,7 +15,7 @@ data = rand(100,10)
 and frames the diffusion map problem as follows.
 
 ```julia
-dp = DiffusionProblem(data; kernel, laplace_type, threshold)
+dp = Diffusionmap(data; kernel, laplace_type, threshold)
 ```
 ### Kernel
 As a kernel for computing the adjacency matrix the following ones can be used
