@@ -18,6 +18,10 @@ struct CustomKernel <: AbstractKernel
     func::Function
 end
 
+struct FlowTensionKernel <: AbstractKernel
+    dist::Matrix
+end
+
 ## similarity computation for each kernel
 
 # multiple dispatch over kernel types
@@ -45,4 +49,17 @@ end
 
 function similarity(k::CustomKernel, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
     return k.func(x,y)
+end
+
+function similarity(k::FlowTensionKernel, x::AbstractArray{T, N}, y::AbstractArray{T, N}) where {T,N}
+    tension = x .- y
+    indBig = findall(x -> x > 0.0, tension)
+    indSmall = findall(x -> x < 0.0, tension)
+    r = []
+    for i in indBig
+        for j in indSmall
+            push!(r,k.dist[i,j] * (tension[i] - tension[j]))
+        end
+    end
+    return 1/sqrt(sum(r.^2))
 end

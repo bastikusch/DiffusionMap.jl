@@ -8,6 +8,7 @@ export
 # kernels.jl
 AbstractKernel, InverseDistanceKernel,
 GaussianKernel, CosineKernel, CustomKernel,
+FlowTensionKernel,
 
 # laplacians.jl
 AbstractLaplacian, RowNormalizedLaplacian,
