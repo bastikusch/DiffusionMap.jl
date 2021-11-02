@@ -55,11 +55,11 @@ function similarity(k::FlowTensionKernel, x::AbstractArray{T, N}, y::AbstractArr
     tension = x .- y
     indBig = findall(x -> x > 0.0, tension)
     indSmall = findall(x -> x < 0.0, tension)
-    r = []
+    r = 0.0
     for i in indBig
         for j in indSmall
-            push!(r,k.dist[i,j] * (tension[i] - tension[j]))
+            r += (k.dist[i,j] * (tension[i] - tension[j]))^2
         end
     end
-    return sum(r.^2) == 0 ? 0 : 1/sqrt(sum(r.^2))
+    return r == 0.0 ? 0.0 : 1/sqrt(r)
 end
