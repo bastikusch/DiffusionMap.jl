@@ -61,5 +61,5 @@ function similarity(k::FlowTensionKernel, x::AbstractArray{T, N}, y::AbstractArr
             push!(r,k.dist[i,j] * (tension[i] - tension[j]))
         end
     end
-    return 1/sqrt(sum(r.^2))
+    return sum(r.^2) == 0 ? 0: 1/sqrt(sum(r.^2))
 end
